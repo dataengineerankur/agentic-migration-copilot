@@ -1,0 +1,148 @@
+{
+  "created_at": "2026-02-04T23:50:46.596577+00:00",
+  "format": "MULTI_TASK",
+  "name": "demo-postgres-snowflake",
+  "new_cluster": {
+    "node_type_id": "i3.xlarge",
+    "num_workers": 2,
+    "spark_version": "13.3.x-scala2.12"
+  },
+  "tasks": [
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "extract_finance"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_extract_finance.py"
+      },
+      "task_key": "extract_finance"
+    },
+    {
+      "depends_on": [
+        {
+          "task_key": "extract_finance"
+        }
+      ],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "transform_finance"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_transform_finance.py"
+      },
+      "task_key": "transform_finance"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "publish_finance"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_publish_finance.py"
+      },
+      "task_key": "publish_finance"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "extract_customers"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_extract_customers.py"
+      },
+      "task_key": "extract_customers"
+    },
+    {
+      "depends_on": [
+        {
+          "task_key": "extract_customers"
+        }
+      ],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "quality_customers"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_quality_customers.py"
+      },
+      "task_key": "quality_customers"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "load_customers"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_load_customers.py"
+      },
+      "task_key": "load_customers"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "extract_orders"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_extract_orders.py"
+      },
+      "task_key": "extract_orders"
+    },
+    {
+      "depends_on": [
+        {
+          "task_key": "extract_orders"
+        }
+      ],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "transform_orders"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_transform_orders.py"
+      },
+      "task_key": "transform_orders"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "load_orders"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_load_orders.py"
+      },
+      "task_key": "load_orders"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "extract_inventory"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_extract_inventory.py"
+      },
+      "task_key": "extract_inventory"
+    },
+    {
+      "depends_on": [
+        {
+          "task_key": "extract_inventory"
+        }
+      ],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "transform_inventory"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_transform_inventory.py"
+      },
+      "task_key": "transform_inventory"
+    },
+    {
+      "depends_on": [],
+      "notebook_task": {
+        "base_parameters": {
+          "task_id": "load_inventory"
+        },
+        "notebook_path": "/Shared/demo-postgres-snowflake/10_transform_load_inventory.py"
+      },
+      "task_key": "load_inventory"
+    }
+  ]
+}

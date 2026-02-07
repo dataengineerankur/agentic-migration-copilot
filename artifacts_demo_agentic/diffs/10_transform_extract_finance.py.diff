@@ -1,0 +1,9 @@
+--- baseline
++++ generated
+@@ -1,6 +0,0 @@
+-# Databricks notebook source
+-def main():
+-    pass
+-
+-if __name__ == "__main__":
+-    main()

@@ -1,0 +1,142 @@
+{
+  "version": "v1.0.0",
+  "states": [
+    "CREATED",
+    "DISCOVERED",
+    "PROFILED",
+    "PLAN_DRAFTED",
+    "PROPOSED",
+    "PLANNED",
+    "EXECUTING",
+    "EXECUTED",
+    "RECONCILED",
+    "PARALLEL_VALIDATED",
+    "CUTOVER_READY",
+    "CUTOVER_DONE",
+    "FAILED",
+    "CANCELLED"
+  ],
+  "transitions": {
+    "CREATED": {
+      "next": ["DISCOVERED", "CANCELLED"],
+      "required_approvals": [],
+      "required_artifacts": ["project.json"]
+    },
+    "DISCOVERED": {
+      "next": ["PROFILED", "FAILED"],
+      "required_approvals": [],
+      "required_artifacts": ["discovery_report.json"]
+    },
+    "PROFILED": {
+      "next": ["PLAN_DRAFTED", "FAILED"],
+      "required_approvals": [],
+      "required_artifacts": ["profiling_report.json"]
+    },
+    "PLAN_DRAFTED": {
+      "next": ["PROPOSED", "FAILED"],
+      "required_approvals": [],
+      "required_artifacts": ["migration_plan_draft.json", "schema_mapping.yml"]
+    },
+    "PROPOSED": {
+      "next": ["PLANNED", "CANCELLED"],
+      "required_approvals": ["tech_lead"],
+      "required_artifacts": ["signed_plan.json"],
+      "blocker_conditions": [
+        "manual_decisions_unresolved",
+        "policy_violations_present",
+        "profiling_incomplete"
+      ]
+    },
+    "PLANNED": {
+      "next": ["EXECUTING", "CANCELLED"],
+      "required_approvals": ["data_owner", "security"],
+      "required_artifacts": ["signed_plan.json"],
+      "blocker_conditions": [
+        "pii_not_addressed",
+        "encryption_requirements_unmet"
+      ]
+    },
+    "EXECUTING": {
+      "next": ["EXECUTED", "FAILED"],
+      "required_approvals": [],
+      "required_artifacts": []
+    },
+    "EXECUTED": {
+      "next": ["RECONCILED", "FAILED"],
+      "required_approvals": [],
+      "required_artifacts": ["execution_report.json"]
+    },
+    "RECONCILED": {
+      "next": ["PARALLEL_VALIDATED", "FAILED"],
+      "required_approvals": ["qa_lead"],
+      "required_artifacts": ["recon_report.json"],
+      "blocker_conditions": [
+        "critical_severity_present",
+        "major_severity_unacknowledged"
+      ]
+    },
+    "PARALLEL_VALIDATED": {
+      "next": ["CUTOVER_READY", "FAILED"],
+      "required_approvals": ["business_owner"],
+      "required_artifacts": ["parallel_run_summary.json"],
+      "blocker_conditions": [
+        "parallel_runs_incomplete",
+        "trending_failures"
+      ]
+    },
+    "CUTOVER_READY": {
+      "next": ["CUTOVER_DONE", "CANCELLED"],
+      "required_approvals": ["release_manager", "data_owner"],
+      "required_artifacts": ["cutover_plan.json", "rollback_plan.json"],
+      "blocker_conditions": [
+        "rollback_not_tested",
+        "maintenance_window_not_scheduled"
+      ]
+    },
+    "CUTOVER_DONE": {
+      "next": [],
+      "required_approvals": [],
+      "required_artifacts": ["evidence_pack/metadata.json"],
+      "terminal": true
+    },
+    "FAILED": {
+      "next": ["PLAN_DRAFTED", "CANCELLED"],
+      "required_approvals": ["tech_lead"],
+      "required_artifacts": ["failure_analysis.json"],
+      "terminal": false
+    },
+    "CANCELLED": {
+      "next": [],
+      "required_approvals": [],
+      "required_artifacts": ["cancellation_reason.json"],
+      "terminal": true
+    }
+  },
+  "approval_roles": {
+    "tech_lead": {
+      "description": "Technical lead responsible for migration approach",
+      "can_approve": ["PROPOSED_to_PLANNED", "FAILED_recovery"]
+    },
+    "data_owner": {
+      "description": "Owner of the data being migrated",
+      "can_approve": ["PLANNED_to_EXECUTING", "CUTOVER_READY_to_CUTOVER_DONE"]
+    },
+    "security": {
+      "description": "Security team representative",
+      "can_approve": ["PLANNED_to_EXECUTING"]
+    },
+    "qa_lead": {
+      "description": "QA lead for reconciliation approval",
+      "can_approve": ["RECONCILED_to_PARALLEL_VALIDATED"]
+    },
+    "business_owner": {
+      "description": "Business stakeholder",
+      "can_approve": ["PARALLEL_VALIDATED_to_CUTOVER_READY"]
+    },
+    "release_manager": {
+      "description": "Release management",
+      "can_approve": ["CUTOVER_READY_to_CUTOVER_DONE"]
+    }
+  }
+}
+

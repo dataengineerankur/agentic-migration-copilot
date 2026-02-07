@@ -1,0 +1,28 @@
+{
+  "dependencies": [
+    {
+      "depends_on": [
+        "extract_finance"
+      ],
+      "task_id": "transform_finance"
+    },
+    {
+      "depends_on": [
+        "extract_customers"
+      ],
+      "task_id": "quality_customers"
+    },
+    {
+      "depends_on": [
+        "extract_orders"
+      ],
+      "task_id": "transform_orders"
+    },
+    {
+      "depends_on": [
+        "extract_inventory"
+      ],
+      "task_id": "transform_inventory"
+    }
+  ]
+}

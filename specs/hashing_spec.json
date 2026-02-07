@@ -1,0 +1,194 @@
+{
+  "spec_version": "v1.0.0",
+  "created_at": "2026-01-01T00:00:00Z",
+  "description": "Canonical row serialization and hashing specification for deterministic reconciliation",
+  
+  "row_hashing": {
+    "algorithm": "xxhash64",
+    "seed": 0,
+    "output_format": "hex_lowercase",
+    "description": "Fast non-cryptographic hash for row comparison"
+  },
+  
+  "file_integrity": {
+    "algorithm": "sha256",
+    "output_format": "hex_lowercase",
+    "description": "Cryptographic hash for file integrity verification"
+  },
+  
+  "serialization": {
+    "format": "canonical_json",
+    "encoding": "utf-8",
+    "column_order": "alphabetical_by_name",
+    "json_options": {
+      "sort_keys": true,
+      "separators": [",", ":"],
+      "ensure_ascii": false
+    },
+    
+    "null_representation": {
+      "value": null,
+      "json_output": "null"
+    },
+    
+    "boolean_representation": {
+      "true_value": true,
+      "false_value": false,
+      "json_output_true": "true",
+      "json_output_false": "false"
+    },
+    
+    "numeric_representation": {
+      "integers": {
+        "description": "Integers serialize as JSON numbers without quotes",
+        "leading_zeros": false,
+        "examples": [
+          {"input": 42, "output": "42"},
+          {"input": -1, "output": "-1"},
+          {"input": 0, "output": "0"}
+        ]
+      },
+      "decimals": {
+        "description": "Decimal numbers serialize with normalized scale (no trailing zeros)",
+        "trailing_zeros": false,
+        "examples": [
+          {"input": "123.40", "output": "123.4"},
+          {"input": "100.00", "output": "100"},
+          {"input": "0.001", "output": "0.001"}
+        ]
+      },
+      "floats": {
+        "description": "Floating point with 17 significant digits for IEEE754 round-trip",
+        "precision_digits": 17,
+        "examples": [
+          {"input": 3.141592653589793, "output": "3.141592653589793"},
+          {"input": 1.0, "output": "1.0"}
+        ]
+      },
+      "special_values": {
+        "nan": "\"NaN\"",
+        "positive_infinity": "\"Infinity\"",
+        "negative_infinity": "\"-Infinity\"",
+        "description": "Special float values serialize as quoted strings"
+      }
+    },
+    
+    "string_representation": {
+      "escaping": "json_standard",
+      "unicode_normalization": "NFC",
+      "description": "Strings are JSON-escaped and Unicode NFC normalized",
+      "escape_sequences": {
+        "backslash": "\\\\",
+        "quote": "\\\"",
+        "newline": "\\n",
+        "carriage_return": "\\r",
+        "tab": "\\t"
+      }
+    },
+    
+    "timestamp_representation": {
+      "format": "iso8601",
+      "timezone_handling": "convert_to_utc",
+      "precision": "milliseconds",
+      "format_string": "%Y-%m-%dT%H:%M:%S.%fZ",
+      "milliseconds_format": "3 digits",
+      "examples": [
+        {
+          "input": "2026-01-05 10:30:00.123456 -05:00",
+          "output": "\"2026-01-05T15:30:00.123Z\""
+        },
+        {
+          "input": "2026-01-05 00:00:00 UTC",
+          "output": "\"2026-01-05T00:00:00.000Z\""
+        }
+      ]
+    },
+    
+    "date_representation": {
+      "format": "iso8601",
+      "format_string": "%Y-%m-%d",
+      "examples": [
+        {"input": "2026-01-05", "output": "\"2026-01-05\""}
+      ]
+    },
+    
+    "time_representation": {
+      "format": "iso8601",
+      "precision": "milliseconds",
+      "format_string": "%H:%M:%S.%f",
+      "examples": [
+        {"input": "10:30:00.123456", "output": "\"10:30:00.123\""}
+      ]
+    },
+    
+    "binary_representation": {
+      "encoding": "base64_standard",
+      "padding": true,
+      "examples": [
+        {"input_hex": "DEADBEEF", "output": "\"3q2+7w==\""}
+      ]
+    },
+    
+    "array_representation": {
+      "format": "json_array",
+      "element_order": "preserve",
+      "whitespace": "none",
+      "examples": [
+        {"input": [1, 2, 3], "output": "[1,2,3]"},
+        {"input": ["a", "b"], "output": "[\"a\",\"b\"]"}
+      ]
+    },
+    
+    "object_representation": {
+      "format": "json_object",
+      "key_order": "alphabetical",
+      "whitespace": "none",
+      "examples": [
+        {"input": {"b": 2, "a": 1}, "output": "{\"a\":1,\"b\":2}"}
+      ]
+    }
+  },
+  
+  "chunking": {
+    "enabled": true,
+    "chunk_size_rows": 100000,
+    "parallel_chunks": 8,
+    "description": "Large tables are processed in parallel chunks for performance"
+  },
+  
+  "sampling": {
+    "method": "deterministic_modulo",
+    "hash_algorithm": "sha256",
+    "description": "Deterministic sampling using sha256(pk) mod M < K",
+    "default_params": {
+      "modulo_divisor": 100,
+      "threshold": 10,
+      "expected_sample_rate": 0.10
+    }
+  },
+  
+  "test_vectors": [
+    {
+      "description": "Simple integer row",
+      "row": {"id": 1, "value": 42},
+      "column_order": ["id", "value"],
+      "serialized": "{\"id\":1,\"value\":42}",
+      "xxhash64": "a1b2c3d4e5f67890"
+    },
+    {
+      "description": "Row with null",
+      "row": {"id": 2, "name": null},
+      "column_order": ["id", "name"],
+      "serialized": "{\"id\":2,\"name\":null}",
+      "xxhash64": "b2c3d4e5f6789012"
+    },
+    {
+      "description": "Row with timestamp",
+      "row": {"id": 3, "created_at": "2026-01-05T15:30:00.123Z"},
+      "column_order": ["created_at", "id"],
+      "serialized": "{\"created_at\":\"2026-01-05T15:30:00.123Z\",\"id\":3}",
+      "xxhash64": "c3d4e5f678901234"
+    }
+  ]
+}
+

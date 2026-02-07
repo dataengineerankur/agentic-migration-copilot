@@ -1,0 +1,122 @@
+[
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_extract_finance.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "extract_finance"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_transform_finance.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "transform_finance"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_publish_finance.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "publish_finance"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_extract_customers.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "extract_customers"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_quality_customers.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "quality_customers"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_load_customers.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "load_customers"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_extract_orders.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "extract_orders"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_transform_orders.py",
+    "operator": "BashOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "transform_orders"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_load_orders.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "load_orders"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_extract_inventory.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "extract_inventory"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_transform_inventory.py",
+    "operator": "BashOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "transform_inventory"
+  },
+  {
+    "assumptions": [],
+    "notebook_name": "10_transform_load_inventory.py",
+    "operator": "PythonOperator",
+    "pattern": "python_notebook_task",
+    "sink": null,
+    "source": null,
+    "stage": "transform",
+    "task_id": "load_inventory"
+  }
+]

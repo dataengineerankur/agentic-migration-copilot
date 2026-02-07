@@ -1,0 +1,6 @@
+{
+  "operator_to_pattern": {
+    "BashOperator": "python_notebook_task",
+    "PythonOperator": "python_notebook_task"
+  }
+}

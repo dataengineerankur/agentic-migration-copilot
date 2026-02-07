@@ -1,0 +1,7 @@
+Return ONLY the content for utils/$util_name as plain text (no JSON, no base64).
+Keep it minimal and ONLY include helpers explicitly required by notebooks.
+Do NOT add extra helpers, logging frameworks, or data quality utilities unless referenced.
+$no_inference_rules
+
+Requirements: $requirements_summary
+Mappings: $mapping_payloads

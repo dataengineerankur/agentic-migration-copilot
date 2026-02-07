@@ -1,0 +1,15 @@
+Generate a Databricks notebook (.py) for this task.
+Notebook must start with "# Databricks notebook source".
+Return JSON only: {"content_base64": "base64 string"}.
+Use standard base64 without newlines.
+Keep it minimal and strictly match the DAG task intent.
+Do NOT add extra steps (DQ, watermarking, schema normalization, logging frameworks).
+Only include Spark/JDBC/Snowflake logic if the DAG task explicitly performs I/O.
+If the DAG task is a PythonOperator that only prints/logs, use print() only.
+Use widgets only if the task has explicit parameters.
+If callable_snippet is provided and only contains print/log statements, mirror those statements.
+$no_inference_rules
+
+Notebook metadata: $notebook
+Requirements: $requirements_summary
+All mappings: $mapping_payloads

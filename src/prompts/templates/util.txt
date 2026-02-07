@@ -1,0 +1,9 @@
+Generate the content for utils/$util_name.
+Return JSON only: {"content_base64": "base64 string"}.
+Use standard base64 without newlines.
+Keep it minimal and ONLY include helpers explicitly required by notebooks.
+Do NOT add extra helpers, logging frameworks, or data quality utilities unless referenced.
+$no_inference_rules
+
+Requirements: $requirements_summary
+Mappings: $mapping_payloads

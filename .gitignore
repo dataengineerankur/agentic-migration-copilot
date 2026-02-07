@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.venv/
+venv/
+var/
+migration_output/
+migration_output_demo/
+artifacts/
+reports/
+*.log

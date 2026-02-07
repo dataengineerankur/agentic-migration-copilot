@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Migration Report - demo-postgres-snowflake</title>
+    <link rel="stylesheet" href="../frontend/static/css/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <div>
+          <h1>demo-postgres-snowflake Migration</h1>
+          <p>Agentic Airflow → Databricks migration report</p>
+        </div>
+        <div class="export">
+          <a class="button" href="export_bundle.zip">Export Bundle</a>
+        </div>
+      </header>
+      <section class="timeline" id="timeline"></section>
+      <section class="cards" id="pipeline-cards"></section>
+      <section class="activity">
+        <h2>Activity Feed</h2>
+        <ul id="activity-feed"></ul>
+      </section>
+      <section class="diff-viewer">
+        <h2>Notebook Diff Viewer</h2>
+        <div class="toggle">
+          <label>
+            <input type="checkbox" id="format-toggle" />
+            <span>Show .ipynb (if generated)</span>
+          </label>
+        </div>
+        <pre id="diff-content">Select a notebook from the cards above.</pre>
+      </section>
+    </main>
+    <script src="../frontend/static/js/app.js"></script>
+  </body>
+</html>

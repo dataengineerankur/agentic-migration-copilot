@@ -1,0 +1,14 @@
+Return ONLY the Databricks Asset Bundle YAML (databricks.yml) as plain text.
+Use notebook tasks and preserve dependencies based on the mapping payloads.
+Use placeholders for workspace values (no secrets).
+Keep it minimal: only jobs/tasks for the mapped DAGs.
+Only include libraries if notebooks explicitly require them.
+Do NOT add extra tags, parameters, or clusters beyond essentials.
+Use notebook paths that match the generated files:
+$${workspace.root_path}/notebooks/<dag_id>/<notebook_name>
+$no_inference_rules
+
+Project name: $project_name
+Requirements summary: $requirements_summary
+Index payloads: $index_payloads
+Mapping payloads: $mapping_payloads

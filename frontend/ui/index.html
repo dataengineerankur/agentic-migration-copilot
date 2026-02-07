@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic Migration Copilot</title>
+    <link rel="stylesheet" href="/frontend/static/css/styles.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h1>Airflow DAGs</h1>
+          <div class="source-info">
+            <span>Source</span>
+            <div id="source-paths">—</div>
+          </div>
+          <div class="source-inputs">
+            <textarea
+              id="source-input"
+              rows="3"
+              placeholder="Source paths to index (one per line)"
+            ></textarea>
+            <input id="output-input" type="text" placeholder="Output folder path" />
+            <input id="project-input" type="text" placeholder="Project name" />
+          </div>
+          <input id="dag-search" type="text" placeholder="Search DAGs" />
+          <select id="status-filter">
+            <option value="all">All statuses</option>
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Migrated">Migrated</option>
+            <option value="Needs Review">Needs Review</option>
+            <option value="Failed">Failed</option>
+          </select>
+        </div>
+        <ul id="dag-list" class="dag-list"></ul>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h2>Migration Session</h2>
+            <p id="session-subtitle">Scan → Index → Analyze → Plan → Generate → Validate → Done</p>
+          </div>
+          <div class="topbar-actions">
+            <button id="migrate-btn" class="primary" disabled>Migrate</button>
+            <button id="settings-btn" class="ghost">Settings</button>
+          </div>
+        </header>
+        <section class="timeline" id="timeline"></section>
+        <section class="session">
+          <div class="summary-card">
+            <h3>Selected DAG Summary</h3>
+            <div id="dag-summary"></div>
+            <div id="dag-warnings" class="warnings"></div>
+          </div>
+          <div class="activity-card">
+            <h3>Activity Feed</h3>
+            <ul id="activity-feed"></ul>
+          </div>
+        </section>
+      </main>
+      <aside class="output-panel">
+        <h2>Databricks Output</h2>
+        <div class="output-block">
+          <label>Workflow Name</label>
+          <div id="workflow-name">—</div>
+        </div>
+        <div class="output-block">
+          <label>Output Location</label>
+          <div class="output-path">
+            <span id="output-path">—</span>
+            <button id="copy-path" class="ghost">Copy</button>
+            <a id="open-folder" class="ghost" href="#" target="_blank">Open</a>
+          </div>
+        </div>
+        <div class="output-block">
+          <label>Artifacts</label>
+          <ul id="artifact-list"></ul>
+        </div>
+        <div class="output-block">
+          <label>Preview</label>
+          <pre id="artifact-preview">Select an artifact to preview.</pre>
+        </div>
+        <div class="output-actions">
+          <a id="export-dag" class="primary" href="#">Export DAG</a>
+          <a id="export-all" class="ghost" href="./export_bundle.zip">Export All</a>
+        </div>
+      </aside>
+    </div>
+
+    <div id="settings-drawer" class="drawer hidden">
+      <div class="drawer-content">
+        <div class="drawer-header">
+          <h3>Agent Settings</h3>
+          <button id="close-settings" class="ghost">Close</button>
+        </div>
+        <div class="drawer-section">
+          <h4>Provider</h4>
+          <select id="agent-mode">
+            <option value="cursor">Cursor</option>
+            <option value="inhouse">In-house</option>
+            <option value="groq">Groq</option>
+            <option value="openrouter">OpenRouter</option>
+          </select>
+        </div>
+        <div class="drawer-section">
+          <h4>Guardrails</h4>
+          <label class="toggle">
+            <input id="no-inference" type="checkbox" />
+            <span>Strict no-inference mode</span>
+          </label>
+        </div>
+        <div class="drawer-section">
+          <h4>Cursor Agent</h4>
+          <input id="cursor-key" type="password" placeholder="Cursor API key" />
+          <input id="cursor-repo" type="text" placeholder="Repository URL" />
+          <input id="cursor-ref" type="text" placeholder="Ref (branch/tag)" />
+          <div class="drawer-actions">
+            <button id="cursor-test" class="ghost">Test connection</button>
+          </div>
+        </div>
+        <div class="drawer-section">
+          <h4>In-house</h4>
+          <input id="inhouse-url" type="text" placeholder="Agent endpoint URL" />
+          <input id="inhouse-token" type="password" placeholder="Auth token" />
+          <input id="inhouse-model" type="text" placeholder="Model name" />
+          <input id="inhouse-headers" type="text" placeholder='Headers JSON (optional)' />
+          <div class="drawer-actions">
+            <button id="inhouse-test" class="ghost">Test connection</button>
+          </div>
+        </div>
+        <div class="drawer-section">
+          <h4>Groq</h4>
+          <input id="groq-key" type="password" placeholder="Groq API key" />
+          <input id="groq-model" type="text" placeholder="Model name (openai/gpt-oss-120b)" />
+          <div class="drawer-actions">
+            <button id="groq-test" class="ghost">Test connection</button>
+          </div>
+        </div>
+        <div class="drawer-section">
+          <h4>OpenRouter</h4>
+          <input id="openrouter-key" type="password" placeholder="OpenRouter API key" />
+          <input id="openrouter-model" type="text" placeholder="Model name" />
+          <div class="drawer-actions">
+            <button id="openrouter-test" class="ghost">Test connection</button>
+          </div>
+        </div>
+        <p class="drawer-note">
+          Configure Cursor or In-house settings to enable migration.
+        </p>
+      </div>
+    </div>
+
+    <script src="/frontend/static/js/app.js"></script>
+  </body>
+</html>

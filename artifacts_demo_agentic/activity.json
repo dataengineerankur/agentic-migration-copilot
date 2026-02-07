@@ -1,0 +1,42 @@
+[
+  {
+    "detail": "Launching agentic pipeline.",
+    "event": "Init",
+    "timestamp": "2026-02-05T00:01:32.517745+00:00"
+  },
+  {
+    "detail": "Mock summarizing requirements.",
+    "event": "Requirements",
+    "timestamp": "2026-02-05T00:01:32.518148+00:00"
+  },
+  {
+    "detail": "Mock analyzing DAG code.",
+    "event": "Discovery",
+    "timestamp": "2026-02-05T00:01:32.518313+00:00"
+  },
+  {
+    "detail": "Mock mapping tasks to patterns.",
+    "event": "Mapping",
+    "timestamp": "2026-02-05T00:01:32.519780+00:00"
+  },
+  {
+    "detail": "Mock generating notebooks.",
+    "event": "Notebook",
+    "timestamp": "2026-02-05T00:01:32.519949+00:00"
+  },
+  {
+    "detail": "Mock building workflow.",
+    "event": "Workflow",
+    "timestamp": "2026-02-05T00:01:32.532604+00:00"
+  },
+  {
+    "detail": "Mock compiling evidence.",
+    "event": "Review",
+    "timestamp": "2026-02-05T00:01:32.532771+00:00"
+  },
+  {
+    "detail": "Mock agentic migration complete.",
+    "event": "Done",
+    "timestamp": "2026-02-05T00:01:32.532925+00:00"
+  }
+]

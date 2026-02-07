@@ -1,0 +1,72 @@
+[
+  {
+    "detail": "Airflow DAGs indexed and task graph assembled.",
+    "event": "Discovery complete",
+    "timestamp": "2026-02-04T23:50:46.599034+00:00"
+  },
+  {
+    "detail": "Airflow operators mapped to Databricks patterns.",
+    "event": "Mapping complete",
+    "timestamp": "2026-02-04T23:50:46.599039+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for extract_finance",
+    "timestamp": "2026-02-04T23:50:46.599041+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for transform_finance",
+    "timestamp": "2026-02-04T23:50:46.599043+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for publish_finance",
+    "timestamp": "2026-02-04T23:50:46.599045+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for extract_customers",
+    "timestamp": "2026-02-04T23:50:46.599046+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for quality_customers",
+    "timestamp": "2026-02-04T23:50:46.599048+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for load_customers",
+    "timestamp": "2026-02-04T23:50:46.599049+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for extract_orders",
+    "timestamp": "2026-02-04T23:50:46.599050+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for transform_orders",
+    "timestamp": "2026-02-04T23:50:46.599051+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for load_orders",
+    "timestamp": "2026-02-04T23:50:46.599052+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for extract_inventory",
+    "timestamp": "2026-02-04T23:50:46.599054+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for transform_inventory",
+    "timestamp": "2026-02-04T23:50:46.599055+00:00"
+  },
+  {
+    "detail": "python_notebook_task",
+    "event": "Notebook drafted for load_inventory",
+    "timestamp": "2026-02-04T23:50:46.599056+00:00"
+  }
+]

@@ -1,0 +1,28 @@
+Create a compact generation manifest. Return JSON only.
+Include notebook list with dag_id + notebook_name + purpose.
+Only include notebooks that correspond 1:1 with the DAG tasks.
+Use task_id as the notebook_name (e.g., task_id + ".py") unless a different name is explicitly required.
+Only include utils if a notebook explicitly needs shared helper(s).
+Prefer zero utils for simple DAGs (e.g., PythonOperator with print-only logic).
+Avoid extra files, scaffolding, or frameworks not required by the DAG.
+$no_inference_rules
+
+Project: $project_name
+Requirements: $requirements_summary
+Index payloads: $index_payloads
+Mapping payloads: $mapping_payloads
+
+Return JSON:
+{
+  "utils": [],
+  "notebooks": [
+    {
+      "dag_id": "string",
+      "task_id": "string",
+      "notebook_name": "string",
+      "purpose": "string",
+      "callable_snippet": "string or null"
+    }
+  ],
+  "assumptions": ["string", ...]
+}

@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://migration-copilot/schemas/signed_plan.schema.json",
+  "title": "SignedPlan",
+  "description": "Immutable, cryptographically signed migration execution plan",
+  "type": "object",
+  "required": [
+    "plan_id",
+    "version",
+    "project_id",
+    "archetype_id",
+    "status",
+    "created_at",
+    "created_by",
+    "policy_version",
+    "rulebook_version",
+    "source_config",
+    "target_config",
+    "steps",
+    "recon_config",
+    "tolerances",
+    "approvals",
+    "signature"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "pattern": "^plan_[a-f0-9]{32}$",
+      "description": "Unique plan identifier"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing version number"
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^proj_[a-f0-9]{32}$"
+    },
+    "archetype_id": {
+      "type": "string",
+      "enum": ["postgres_to_s3", "hdfs_to_s3", "snowflake_to_redshift", "lake_to_delta_iceberg"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFTED", "VALIDATED", "APPROVED", "EXECUTING", "EXECUTED", "RECONCILED", "FAILED"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Service account or user ID that created this plan"
+    },
+    "policy_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of policy.json used for validation"
+    },
+    "rulebook_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Version of type_coercion_rulebook.json used"
+    },
+    "source_config": {
+      "$ref": "#/definitions/connection_config"
+    },
+    "target_config": {
+      "$ref": "#/definitions/connection_config"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/execution_step"
+      }
+    },
+    "recon_config": {
+      "$ref": "#/definitions/recon_config"
+    },
+    "tolerances": {
+      "$ref": "#/definitions/tolerances"
+    },
+    "approvals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/approval"
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": ["algorithm", "value", "signed_at", "signed_by"],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["RSA-SHA256", "ECDSA-P256-SHA256"]
+        },
+        "value": {
+          "type": "string",
+          "description": "Base64-encoded signature"
+        },
+        "signed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signed_by": {
+          "type": "string",
+          "description": "Signing service identity"
+        }
+      }
+    },
+    "previous_plan_id": {
+      "type": ["string", "null"],
+      "description": "Link to previous version if this is a revision"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "definitions": {
+    "connection_config": {
+      "type": "object",
+      "required": ["type", "secret_ref", "scope"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["postgres", "hdfs", "hive", "snowflake", "redshift", "s3", "delta", "iceberg"]
+        },
+        "secret_ref": {
+          "type": "string",
+          "pattern": "^vault://.*$",
+          "description": "Reference to secrets manager, never plaintext"
+        },
+        "scope": {
+          "type": "object",
+          "required": ["databases", "schemas", "tables"],
+          "properties": {
+            "databases": { "type": "array", "items": { "type": "string" } },
+            "schemas": { "type": "array", "items": { "type": "string" } },
+            "tables": { "type": "array", "items": { "type": "string" } },
+            "exclude_patterns": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "execution_step": {
+      "type": "object",
+      "required": ["step_id", "step_type", "order", "params", "checkpoint_enabled"],
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "pattern": "^step_[a-f0-9]{16}$"
+        },
+        "step_type": {
+          "type": "string",
+          "enum": ["extract", "transform", "load", "validate", "checkpoint"]
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "params": {
+          "type": "object",
+          "description": "Step-specific parameters"
+        },
+        "checkpoint_enabled": {
+          "type": "boolean"
+        },
+        "retry_config": {
+          "type": "object",
+          "properties": {
+            "max_retries": { "type": "integer", "default": 3 },
+            "backoff_seconds": { "type": "integer", "default": 60 }
+          }
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "default": 3600
+        }
+      }
+    },
+    "recon_config": {
+      "type": "object",
+      "required": ["strategy", "hashing", "sampling", "parallel_runs"],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["row_hash_only", "row_hash_plus_aggregates", "row_hash_plus_aggregates_plus_keydiff"]
+        },
+        "hashing": {
+          "type": "object",
+          "required": ["algorithm", "serialization_spec_version"],
+          "properties": {
+            "algorithm": { "type": "string", "enum": ["xxhash64", "sha256"] },
+            "serialization_spec_version": { "type": "string" }
+          }
+        },
+        "sampling": {
+          "type": "object",
+          "required": ["method", "params"],
+          "properties": {
+            "method": { "type": "string", "enum": ["deterministic_modulo", "stratified"] },
+            "params": {
+              "type": "object",
+              "properties": {
+                "modulo_divisor": { "type": "integer" },
+                "modulo_threshold": { "type": "integer" },
+                "seed_column": { "type": "string" }
+              }
+            }
+          }
+        },
+        "parallel_runs": {
+          "type": "object",
+          "required": ["required_count", "interval_hours"],
+          "properties": {
+            "required_count": { "type": "integer", "default": 14 },
+            "interval_hours": { "type": "integer", "default": 24 }
+          }
+        }
+      }
+    },
+    "tolerances": {
+      "type": "object",
+      "required": ["row_count", "hash_mismatch", "null_rate_delta", "numeric_precision"],
+      "properties": {
+        "row_count": {
+          "type": "object",
+          "required": ["critical_threshold_pct", "major_threshold_pct"],
+          "properties": {
+            "critical_threshold_pct": { "type": "number", "default": 0.0 },
+            "major_threshold_pct": { "type": "number", "default": 0.01 }
+          }
+        },
+        "hash_mismatch": {
+          "type": "object",
+          "required": ["critical_threshold_pct", "major_threshold_pct"],
+          "properties": {
+            "critical_threshold_pct": { "type": "number", "default": 0.0 },
+            "major_threshold_pct": { "type": "number", "default": 0.001 }
+          }
+        },
+        "null_rate_delta": {
+          "type": "object",
+          "properties": {
+            "major_threshold_pct": { "type": "number", "default": 0.1 }
+          }
+        },
+        "numeric_precision": {
+          "type": "object",
+          "properties": {
+            "allowed_scale_loss": { "type": "integer", "default": 0 }
+          }
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "required": ["approver_id", "role", "approved_at", "scope", "sha256_reviewed"],
+      "properties": {
+        "approver_id": { "type": "string" },
+        "role": { "type": "string", "enum": ["tech_lead", "data_owner", "security", "qa_lead", "business_owner", "release_manager"] },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "scope": { "type": "string", "enum": ["plan", "execution", "reconciliation", "cutover"] },
+        "sha256_reviewed": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}
+

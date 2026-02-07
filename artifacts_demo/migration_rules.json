@@ -1,0 +1,47 @@
+{
+  "bash": {
+    "description": "Bash scripts translated into Python notebooks.",
+    "pattern": "python_notebook_task",
+    "stage": "transform"
+  },
+  "generic": {
+    "description": "Unknown operators mapped to generic notebooks.",
+    "pattern": "generic_notebook_task",
+    "stage": "transform"
+  },
+  "hdfs": {
+    "description": "HDFS to cloud storage via copy/Auto Loader.",
+    "pattern": "hdfs_to_cloud_copy",
+    "stage": "ingest"
+  },
+  "hive": {
+    "description": "Hive/Impala SQL mapped to Spark SQL.",
+    "pattern": "spark_sql_transform",
+    "stage": "transform"
+  },
+  "kafka": {
+    "description": "Kafka streams mapped to Structured Streaming + Delta.",
+    "pattern": "structured_streaming",
+    "stage": "ingest"
+  },
+  "publish": {
+    "description": "Publish steps mapped to curated Delta tables.",
+    "pattern": "publish_delta_or_table",
+    "stage": "publish"
+  },
+  "python": {
+    "description": "Python operators mapped to Python notebooks.",
+    "pattern": "python_notebook_task",
+    "stage": "transform"
+  },
+  "quality": {
+    "description": "Quality checks mapped to validation notebooks.",
+    "pattern": "data_quality_checks",
+    "stage": "quality"
+  },
+  "sqoop": {
+    "description": "Sqoop jobs mapped to JDBC read/write + Delta.",
+    "pattern": "jdbc_ingest_delta",
+    "stage": "ingest"
+  }
+}
