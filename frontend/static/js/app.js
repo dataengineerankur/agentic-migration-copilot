@@ -2,6 +2,8 @@ const dagList = document.getElementById("dag-list");
 const dagSearch = document.getElementById("dag-search");
 const statusFilter = document.getElementById("status-filter");
 const sourcePaths = document.getElementById("source-paths");
+const dagInput = document.getElementById("dag-input");
+const dagRefresh = document.getElementById("dag-refresh");
 const sourceInput = document.getElementById("source-input");
 const pdfsInput = document.getElementById("pdfs-input");
 const outputInput = document.getElementById("output-input");
@@ -86,10 +88,16 @@ async function loadSession() {
 }
 
 function parseSourceInputs() {
-  return sourceInput.value
+  const extra = sourceInput.value
     .split(/\n|,/)
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
+  const dagPath = (dagInput?.value || "").trim();
+  if (dagPath) {
+    const combined = [dagPath, ...extra];
+    return Array.from(new Set(combined));
+  }
+  return extra;
 }
 
 async function loadActivity() {
@@ -371,12 +379,40 @@ async function migrate() {
   }
 }
 
+async function refreshDags() {
+  await saveSettings();
+  const response = await fetch("/api/scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      inputs: parseSourceInputs(),
+    }),
+  });
+  if (!response.ok) {
+    const result = await response.json();
+    alert(result.error || "Failed to refresh DAGs");
+    return;
+  }
+  session = await response.json();
+  renderTimeline(session?.timeline || []);
+  sourcePaths.textContent = (session.source_inputs || []).join(", ") || "—";
+  renderDagList();
+  const dags = session?.dags || [];
+  if (dags.length > 0) {
+    selectDag(dags[0]);
+  }
+  updateMigrateButton();
+}
+
 function setupHandlers() {
   dagSearch.addEventListener("input", renderDagList);
   statusFilter.addEventListener("change", renderDagList);
   copyPathBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(session.migration_root);
   });
+  if (dagRefresh) {
+    dagRefresh.addEventListener("click", refreshDags);
+  }
   settingsBtn.addEventListener("click", () => settingsDrawer.classList.remove("hidden"));
   closeSettings.addEventListener("click", () => settingsDrawer.classList.add("hidden"));
   cursorTest.addEventListener("click", () => testConnection("cursor"));
@@ -425,6 +461,9 @@ async function init() {
   groqModel.value = settings.groq_model || "";
   openrouterKey.value = settings.openrouter_api_key || "";
   openrouterModel.value = settings.openrouter_model || "";
+  if (dagInput) {
+    dagInput.value = "";
+  }
   sourceInput.value = (settings.source_inputs || []).join("\n");
   pdfsInput.value = settings.pdfs_path || "";
   outputInput.value = settings.output_root || "";

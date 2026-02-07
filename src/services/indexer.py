@@ -36,6 +36,7 @@ def index_airflow_file(path: str, content: str) -> Dict[str, Any]:
         "dependencies": dependencies,
         "operator_summary": operator_summary,
         "task_graph": task_graph,
+        "has_dag_definition": parsed.has_dag_definition,
         "code_index": {
             "file_path": path,
             "tasks": tasks,

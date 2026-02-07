@@ -76,6 +76,15 @@ def _make_handler(allowed_agents: Optional[List[str]]):
                 _save_settings(payload)
                 self._send_json({"ok": True})
                 return
+            if self.path.startswith("/api/scan"):
+                payload = self._read_json()
+                settings = _load_settings()
+                inputs = payload.get("inputs") or settings.get("source_inputs") or []
+                settings["source_inputs"] = inputs
+                _save_settings(settings)
+                session_payload = _build_scan_session(settings, allowed_agents=allowed_agents)
+                self._send_json(session_payload)
+                return
             if self.path.startswith("/api/test"):
                 payload = self._read_json()
                 mode = payload.get("mode")
@@ -195,6 +204,8 @@ def _build_scan_session(settings: Dict[str, Any], *, allowed_agents: Optional[Li
             with open(path, "r", encoding="utf-8") as handle:
                 content = handle.read()
             index = index_airflow_file(path, content)
+            if not index.get("has_dag_definition"):
+                continue
             dags.append(
                 {
                     "dag_id": index["dag_id"],

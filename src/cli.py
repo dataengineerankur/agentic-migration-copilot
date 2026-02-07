@@ -96,8 +96,10 @@ def build_migration_artifacts(
     dag_sources: Dict[str, str] = {}
     for path, content in text_blobs.items():
         if path.endswith(".py"):
-            dag_sources[path] = content
-            dags.append(parse_airflow_file(path, content))
+            parsed = parse_airflow_file(path, content)
+            if parsed.has_dag_definition:
+                dag_sources[path] = content
+                dags.append(parsed)
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     pdfs_dir = pdfs_path or os.path.join(repo_root, "pdfs")
     ensure_dir(pdfs_dir)

@@ -21,6 +21,7 @@ class ParsedDAG:
     tasks: Dict[str, ParsedTask] = field(default_factory=dict)
     dependencies: List[Tuple[str, str]] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
+    has_dag_definition: bool = False
 
 
 def _safe_literal(node: ast.AST) -> Optional[str]:
@@ -107,6 +108,7 @@ class AirflowDagParser(ast.NodeVisitor):
         self.generic_visit(node)
 
     def _capture_dag_meta(self, call: ast.Call) -> None:
+        self.dag.has_dag_definition = True
         for keyword in call.keywords:
             key = keyword.arg
             if not key:
