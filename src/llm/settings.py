@@ -38,6 +38,7 @@ class LLMSettings:
         self.inhouse_timeout_s: float = float(os.getenv("AMC_INHOUSE_TIMEOUT_S", "60.0"))
 
         self.no_inference: bool = os.getenv("AMC_NO_INFERENCE", "false").lower() == "true"
+        self.pdf_required: bool = os.getenv("AMC_PDF_REQUIRED", "false").lower() == "true"
 
         self.allow_mock: bool = os.getenv("AMC_ALLOW_MOCK", "false").lower() == "true"
 

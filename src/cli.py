@@ -552,7 +552,10 @@ def format_migration_plan(
 
 
 def format_migration_plan_llm(
-    dags: List[Any], mappings: List[Dict[str, Any]], ingest_result
+    dags: List[Any],
+    mappings: List[Dict[str, Any]],
+    ingest_result,
+    requirements_summary: Optional[str] = None,
 ) -> str:
     lines = [
         "# Migration Plan",
@@ -562,6 +565,9 @@ def format_migration_plan_llm(
         "## Inputs",
         f"- Sources: {', '.join(ingest_result.sources) or 'None detected'}",
         f"- Sinks: {', '.join(ingest_result.sinks) or 'None detected'}",
+        "",
+        "## Requirements",
+        requirements_summary or "None provided",
         "",
         "## Task Mapping",
     ]
@@ -821,7 +827,12 @@ def write_reports_per_dag(
         mapping = mapping_by_dag.get(dag_id, {"mappings": []})
         write_json(os.path.join(dag_root, "task_mapping.json"), mapping.get("mappings", []))
 
-        plan_text = format_migration_plan_llm([index_result], mapping.get("mappings", []), ingest_result)
+        plan_text = format_migration_plan_llm(
+            [index_result],
+            mapping.get("mappings", []),
+            ingest_result,
+            requirements_summary=mapping.get("requirements_summary"),
+        )
         write_text(os.path.join(dag_root, "migration_plan.md"), plan_text)
 
         dag_assumptions = assumptions[:]
@@ -877,7 +888,7 @@ def build_session_payload(
         "agent_mode": agent_mode,
         "agent_configured": agent_configured,
         "dags": dags,
-        "timeline": ["Scan", "Index", "Analyze", "Plan", "Generate", "Validate", "Done"],
+        "timeline": ["Scan", "Docs", "Index", "Analyze", "Plan", "Generate", "Validate", "Done"],
     }
 
 

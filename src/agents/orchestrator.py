@@ -48,7 +48,7 @@ class AgentOrchestrator:
                 )
 
             llm = LLMClient(self.settings)
-            self.activity.log("Analyze", "Summarizing external instructions (if any).")
+            self.activity.log("Docs", "Reading external instructions (if any).")
             requirements = RequirementsAgent(llm).run(requirement_texts=requirements_texts)
 
             index_agent = IndexingAgent()
@@ -63,24 +63,37 @@ class AgentOrchestrator:
                 per_dag_requirements = None
                 if dag_requirements_texts:
                     per_dag_requirements = dag_requirements_texts.get(index_result.dag_id)
+                if self.settings.pdf_required and not per_dag_requirements:
+                    raise ValueError(
+                        f"PDF required but missing for {index_result.dag_id}."
+                    )
                 if per_dag_requirements:
+                    combined_pdf = "\n\n".join(per_dag_requirements.values()).strip()
+                    if not combined_pdf:
+                        self.activity.log(
+                            "Docs",
+                            f"PDF instructions empty for {index_result.dag_id}.",
+                            dag_id=index_result.dag_id,
+                        )
+                        raise ValueError(
+                            f"PDF instructions empty or unreadable for {index_result.dag_id}."
+                        )
                     self.activity.log(
-                        "Analyze",
-                        f"Summarizing PDF instructions for {index_result.dag_id}.",
+                        "Docs",
+                        f"Summarizing PDF instructions for {index_result.dag_id} ({len(combined_pdf)} chars).",
                         dag_id=index_result.dag_id,
                     )
                     dag_requirements = PdfRequirementsAgent(llm).run(
                         dag_id=index_result.dag_id,
                         requirement_texts=per_dag_requirements,
                     )
-                    requirements_summary = (
-                        f"{requirements.summary}\n\nPDF requirements:\n{dag_requirements.summary}".strip()
-                    )
-                    assumptions = requirements.assumptions[:]
-                    assumptions.extend(dag_requirements.assumptions)
+                    requirements_summary = f"PDF ONLY:\n{dag_requirements.summary}".strip()
+                    assumptions = dag_requirements.assumptions[:]
+                    pdf_text = combined_pdf
                 else:
                     requirements_summary = requirements.summary
                     assumptions = requirements.assumptions[:]
+                    pdf_text = ""
                 self.activity.log("Analyze", f"Analyzing DAG {index_result.dag_id}.", dag_id=index_result.dag_id)
                 self.activity.log("Plan", f"Planning migration for {index_result.dag_id}.", dag_id=index_result.dag_id)
                 mapping = mapping_agent.run(
@@ -93,16 +106,23 @@ class AgentOrchestrator:
                         "dag_id": mapping.dag_id,
                         "mappings": mapping.mappings,
                         "assumptions": assumptions + mapping.assumptions,
+                        "requirements_summary": requirements_summary,
+                        "pdf_text": pdf_text,
                     }
                 )
 
             self.activity.log("Generate", "Generating notebooks, utils, and databricks.yml.")
             codegen_agent = CodegenAgent(llm)
+            combined_requirements = requirements.summary
+            for mapping in mapping_results:
+                rs = (mapping.get("requirements_summary") or "").strip()
+                if rs and rs not in combined_requirements:
+                    combined_requirements = f"{combined_requirements}\n\nDAG {mapping.get('dag_id')}:\n{rs}".strip()
             codegen = codegen_agent.run(
                 project_name=project_name,
                 index_payloads=[result.raw for result in index_results],
                 mapping_payloads=mapping_results,
-                requirements_summary=requirements.summary,
+                requirements_summary=combined_requirements,
             )
 
             assumptions = []

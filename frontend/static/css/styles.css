@@ -260,6 +260,25 @@ body {
   margin-bottom: 16px;
 }
 
+.output-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ghost.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+#pdf-preview {
+  max-height: 220px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
 .output-block label {
   font-size: 12px;
   color: #94a3b8;

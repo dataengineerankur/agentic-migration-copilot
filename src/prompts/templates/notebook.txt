@@ -9,6 +9,8 @@ If the DAG task is a PythonOperator that only prints/logs, use print() only.
 Use widgets only if the task has explicit parameters.
 If callable_snippet is provided and only contains print/log statements, mirror those statements.
 $no_inference_rules
+If mapping payloads include pdf_text or requirements_summary starting with "PDF ONLY", follow the PDF instructions
+even if DAG callables only print.
 
 Notebook metadata: $notebook
 Requirements: $requirements_summary

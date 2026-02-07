@@ -4,6 +4,8 @@ Do NOT infer data movement from task names alone. Use callable_definition/code_s
 If a PythonOperator callable only prints/logs, map it to a print-only notebook (no Spark, no JDBC, no Snowflake).
 Avoid extra stages (DQ, watermarking, normalization) unless explicitly present in code.
 $no_inference_rules
+If requirements_summary begins with "PDF ONLY", use PDF instructions as the source of truth and
+use DAG code only for task graph/dependencies.
 
 Requirements summary:
 $requirements_summary

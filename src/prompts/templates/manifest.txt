@@ -6,6 +6,8 @@ Only include utils if a notebook explicitly needs shared helper(s).
 Prefer zero utils for simple DAGs (e.g., PythonOperator with print-only logic).
 Avoid extra files, scaffolding, or frameworks not required by the DAG.
 $no_inference_rules
+If mapping payloads include pdf_text or requirements_summary starting with "PDF ONLY", use the PDF instructions
+to define notebook purpose and content even if DAG callables are print-only.
 
 Project: $project_name
 Requirements: $requirements_summary

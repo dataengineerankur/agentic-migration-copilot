@@ -23,6 +23,8 @@ const migrateBtn = document.getElementById("migrate-btn");
 const settingsBtn = document.getElementById("settings-btn");
 const settingsDrawer = document.getElementById("settings-drawer");
 const closeSettings = document.getElementById("close-settings");
+const pdfPreview = document.getElementById("pdf-preview");
+const pdfReload = document.getElementById("pdf-reload");
 const cursorTest = document.getElementById("cursor-test");
 const inhouseTest = document.getElementById("inhouse-test");
 const agentMode = document.getElementById("agent-mode");
@@ -40,6 +42,7 @@ const openrouterModel = document.getElementById("openrouter-model");
 const groqTest = document.getElementById("groq-test");
 const openrouterTest = document.getElementById("openrouter-test");
 const noInference = document.getElementById("no-inference");
+const pdfRequired = document.getElementById("pdf-required");
 
 let session = null;
 let activity = [];
@@ -202,6 +205,7 @@ function selectDag(dag) {
   renderDagSummary();
   renderArtifacts();
   renderActivity();
+  loadPdfPreview();
 }
 
 function renderDagSummary() {
@@ -339,6 +343,7 @@ async function saveSettings() {
     project_name: projectInput.value || undefined,
     selected_dags: Array.from(selectedDags),
     no_inference: noInference.checked,
+    pdf_required: pdfRequired.checked,
   };
   await fetch("/api/settings", {
     method: "POST",
@@ -379,6 +384,28 @@ async function migrate() {
   }
 }
 
+async function loadPdfPreview() {
+  if (!pdfPreview) return;
+  if (!selectedDag) {
+    pdfPreview.textContent = "Select a DAG to preview its PDF.";
+    return;
+  }
+  const response = await fetch(
+    `/api/pdf_text?dag_id=${encodeURIComponent(selectedDag.dag_id)}`
+  );
+  if (!response.ok) {
+    pdfPreview.textContent = "Unable to load PDF preview.";
+    return;
+  }
+  const result = await response.json();
+  if (result.ok) {
+    pdfPreview.textContent = result.text || "(empty)";
+  } else {
+    const error = result.error || "pdf_not_found";
+    pdfPreview.textContent = `PDF not available (${error}).`;
+  }
+}
+
 async function refreshDags() {
   await saveSettings();
   const response = await fetch("/api/scan", {
@@ -410,6 +437,9 @@ function setupHandlers() {
   copyPathBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(session.migration_root);
   });
+  if (pdfReload) {
+    pdfReload.addEventListener("click", loadPdfPreview);
+  }
   if (dagRefresh) {
     dagRefresh.addEventListener("click", refreshDags);
   }
@@ -470,6 +500,7 @@ async function init() {
   projectInput.value = settings.project_name || "";
   selectedDags = new Set(settings.selected_dags || []);
   noInference.checked = Boolean(settings.no_inference);
+  pdfRequired.checked = Boolean(settings.pdf_required);
   renderDagList();
   const dags = session?.dags || [];
   if (dags.length > 0) {

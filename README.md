@@ -153,9 +153,11 @@ Place PDFs under `pdfs/` with the filename matching the DAG id:
 ```
 pdfs/
   postgres_to_snowflake_finance.pdf
+  pdf_only_instructions.pdf
   orders_pipeline.pdf
 ```
 When a matching PDF exists, its contents are used **as the only external instructions** for that DAG.
+If present, the planner uses **PDF ONLY** requirements for that DAG.
 
 Requirements:
 ```

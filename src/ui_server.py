@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
 from typing import Any, Dict, List, Optional
 
 from .cli import build_migration_artifacts
@@ -68,6 +69,19 @@ def _make_handler(allowed_agents: Optional[List[str]]):
                 if not isinstance(data, list):
                     data = []
                 self._send_json(data)
+                return
+            if self.path.startswith("/api/pdf_text"):
+                settings = _load_settings()
+                query = parse_qs(urlparse(self.path).query)
+                dag_id = (query.get("dag_id") or [""])[0]
+                pdfs_dir = settings.get("pdfs_path", "")
+                from .services.pdf_reader import get_pdf_text_for_dag
+
+                text, error = get_pdf_text_for_dag(pdfs_dir, dag_id)
+                if text:
+                    self._send_json({"ok": True, "text": text})
+                else:
+                    self._send_json({"ok": False, "error": error or "unknown_error"})
                 return
             if self.path == "/" or self.path.startswith("/index.html"):
                 self.path = "/frontend/ui/index.html"
@@ -195,6 +209,7 @@ def _default_settings() -> Dict[str, Any]:
         "groq_api_key": os.getenv("GROQ_API_KEY"),
         "groq_model": os.getenv("GROQ_MODEL"),
         "no_inference": False,
+        "pdf_required": False,
         "pdfs_path": os.path.join(repo_root, "pdfs"),
     }
 
@@ -229,7 +244,7 @@ def _build_scan_session(settings: Dict[str, Any], *, allowed_agents: Optional[Li
         "allowed_agents": allowed_agents or [],
         "pdfs_path": settings.get("pdfs_path", ""),
         "dags": dags,
-        "timeline": ["Scan", "Index", "Analyze", "Plan", "Generate", "Validate", "Done"],
+        "timeline": ["Scan", "Docs", "Index", "Analyze", "Plan", "Generate", "Validate", "Done"],
     }
 
 
@@ -290,6 +305,7 @@ def _apply_env(settings: Dict[str, Any], mode_override: Optional[str] = None) ->
     _set_env("AMC_OPENROUTER_MODEL", settings.get("openrouter_model"))
 
     _set_env("AMC_NO_INFERENCE", settings.get("no_inference"))
+    _set_env("AMC_PDF_REQUIRED", settings.get("pdf_required"))
 
 
 def _merge_settings(current: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:

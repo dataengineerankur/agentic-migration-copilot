@@ -82,6 +82,13 @@
           <ul id="artifact-list"></ul>
         </div>
         <div class="output-block">
+          <div class="output-title">
+            <label>PDF Preview</label>
+            <button id="pdf-reload" class="ghost small">Reload</button>
+          </div>
+          <pre id="pdf-preview">Select a DAG to preview its PDF.</pre>
+        </div>
+        <div class="output-block">
           <label>Preview</label>
           <pre id="artifact-preview">Select an artifact to preview.</pre>
         </div>
@@ -112,6 +119,10 @@
           <label class="toggle">
             <input id="no-inference" type="checkbox" />
             <span>Strict no-inference mode</span>
+          </label>
+          <label class="toggle">
+            <input id="pdf-required" type="checkbox" />
+            <span>Require PDF per DAG</span>
           </label>
         </div>
         <div class="drawer-section" data-agent="cursor">
