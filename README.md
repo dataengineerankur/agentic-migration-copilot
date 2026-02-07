@@ -57,6 +57,7 @@ Typical mappings:
 ```
 python -m src.cli \
   --input /path/to/airflow/dags /path/to/other/repos \
+  --pdfs /path/to/pdfs \
   --output /path/to/artifacts \
   --project-name my-airflow-migration \
   --notebook-format both
@@ -93,6 +94,13 @@ Open `http://127.0.0.1:8001/` to configure settings and start a migration.
 In the UI:
 - **Source paths** accepts multiple directories or files (one per line).
 - Use this for DAG folders, external repos, or shared library code you want indexed.
+- **PDFs folder** accepts a directory with per-DAG PDFs (see below).
+
+### Restrict UI to one agent
+To show only one provider in the UI:
+```
+python -m src.ui_server --host 127.0.0.1 --port 8001 --agent inhouse
+```
 
 ## LLM Agent Settings
 The CLI uses LLM-backed agents by default. Configure one of the providers below:
@@ -139,6 +147,20 @@ If you want the agents to avoid any extrapolation and use only DAG code + extern
 export AMC_NO_INFERENCE=true
 ```
 In the UI, enable **Strict no-inference mode** under Settings → Guardrails.
+
+## PDF instructions per DAG
+Place PDFs under `pdfs/` with the filename matching the DAG id:
+```
+pdfs/
+  postgres_to_snowflake_finance.pdf
+  orders_pipeline.pdf
+```
+When a matching PDF exists, its contents are used **as the only external instructions** for that DAG.
+
+Requirements:
+```
+pip install PyPDF2
+```
 
 ## Git repository setup (clean push)
 Before creating a remote repo, remove local artifacts and secrets:

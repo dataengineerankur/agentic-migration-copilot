@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ..services.activity import ActivityLogger
 from ..services.mapping import infer_mapping
@@ -16,6 +16,7 @@ class MockAgentRunner:
         dag_sources: Dict[str, str],
         requirements_texts: Dict[str, str],
         project_name: str,
+        dag_requirements_texts: Optional[Dict[str, Dict[str, str]]] = None,
     ) -> "AgenticOutput":
         from .orchestrator import AgenticOutput
 

@@ -15,10 +15,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Agentic Migration Copilot UI Server")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8001)
+    parser.add_argument(
+        "--agent",
+        default=None,
+        choices=["inhouse", "openrouter", "groq", "cursor"],
+        help="If set, restrict UI to a single agent provider.",
+    )
     args = parser.parse_args()
 
     os.makedirs("var", exist_ok=True)
-    handler = _make_handler()
+    allowed_agents = [args.agent] if args.agent else None
+    handler = _make_handler(allowed_agents)
     try:
         server = ThreadingHTTPServer((args.host, args.port), handler)
     except PermissionError as exc:
@@ -31,11 +38,11 @@ def main() -> None:
     server.serve_forever()
 
 
-def _make_handler():
+def _make_handler(allowed_agents: Optional[List[str]]):
     class Handler(SimpleHTTPRequestHandler):
         def do_GET(self) -> None:
             if self.path.startswith("/api/settings"):
-                self._send_json(_load_settings())
+                self._send_json(_decorate_settings(_load_settings(), allowed_agents))
                 return
             if self.path.startswith("/api/session"):
                 settings = _load_settings()
@@ -43,7 +50,7 @@ def _make_handler():
                 session_path = os.path.join(output_root, "reports", "session.json")
                 session_payload = _load_json(session_path)
                 if not session_payload:
-                    session_payload = _build_scan_session(settings)
+                    session_payload = _build_scan_session(settings, allowed_agents=allowed_agents)
                 self._send_json(session_payload)
                 return
             if self.path.startswith("/api/activity"):
@@ -88,6 +95,7 @@ def _make_handler():
                 notebook_format = payload.get("notebook_format") or "py"
                 agent_mode = payload.get("agent_mode") or None
                 selected_dags = payload.get("selected_dags") or settings.get("selected_dags") or []
+                pdfs_path = payload.get("pdfs_path") or settings.get("pdfs_path") or None
 
                 _apply_env(settings, mode_override=agent_mode)
                 try:
@@ -101,6 +109,7 @@ def _make_handler():
                         notebook_format=notebook_format,
                         agent_mode=agent_mode,
                         selected_dags=selected_dags,
+                        pdfs_path=pdfs_path,
                     )
                     self._send_json({"ok": True})
                 except Exception as exc:  # noqa: BLE001
@@ -170,10 +179,11 @@ def _default_settings() -> Dict[str, Any]:
         "groq_api_key": os.getenv("GROQ_API_KEY"),
         "groq_model": os.getenv("GROQ_MODEL"),
         "no_inference": False,
+        "pdfs_path": os.path.join(repo_root, "pdfs"),
     }
 
 
-def _build_scan_session(settings: Dict[str, Any]) -> Dict[str, Any]:
+def _build_scan_session(settings: Dict[str, Any], *, allowed_agents: Optional[List[str]] = None) -> Dict[str, Any]:
     source_inputs = settings.get("source_inputs") or []
     dags: List[Dict[str, Any]] = []
     for path in _collect_dag_files(source_inputs):
@@ -198,9 +208,17 @@ def _build_scan_session(settings: Dict[str, Any]) -> Dict[str, Any]:
         "source_inputs": source_inputs,
         "agent_mode": settings.get("agent_mode", "inhouse"),
         "agent_configured": _is_agent_configured(settings),
+        "allowed_agents": allowed_agents or [],
+        "pdfs_path": settings.get("pdfs_path", ""),
         "dags": dags,
         "timeline": ["Scan", "Index", "Analyze", "Plan", "Generate", "Validate", "Done"],
     }
+
+
+def _decorate_settings(settings: Dict[str, Any], allowed_agents: Optional[List[str]]) -> Dict[str, Any]:
+    payload = dict(settings)
+    payload["allowed_agents"] = allowed_agents or []
+    return payload
 
 
 def _collect_dag_files(inputs: List[str]) -> List[str]:

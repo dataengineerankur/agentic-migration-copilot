@@ -41,6 +41,11 @@ def main() -> None:
         help="Notebook output format.",
     )
     parser.add_argument(
+        "--pdfs",
+        default=None,
+        help="Path to PDF instruction folder (PDF name must match dag_id).",
+    )
+    parser.add_argument(
         "--agent-mode",
         default=None,
         help="Override AMC_AGENT_MODE for LLM provider selection.",
@@ -58,6 +63,7 @@ def main() -> None:
         confluence_token=args.confluence_token,
         notebook_format=args.notebook_format,
         agent_mode=args.agent_mode,
+        pdfs_path=args.pdfs,
     )
 
     print("Migration artifacts generated:")
@@ -75,6 +81,7 @@ def build_migration_artifacts(
     notebook_format: str,
     agent_mode: Optional[str],
     selected_dags: Optional[List[str]] = None,
+    pdfs_path: Optional[str] = None,
 ) -> List[str]:
     generated: List[str] = []
 
@@ -91,6 +98,17 @@ def build_migration_artifacts(
         if path.endswith(".py"):
             dag_sources[path] = content
             dags.append(parse_airflow_file(path, content))
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    pdfs_dir = pdfs_path or os.path.join(repo_root, "pdfs")
+    ensure_dir(pdfs_dir)
+
+    from .services.pdf_reader import load_pdf_instructions
+
+    pdf_instructions, pdf_notes = load_pdf_instructions(
+        pdfs_dir, [dag.dag_id or "" for dag in dags]
+    )
+    ingest_result.notes.extend(pdf_notes)
+
 
     if selected_dags:
         selected_set = set(selected_dags)
@@ -128,6 +146,7 @@ def build_migration_artifacts(
             if key.endswith((".md", ".txt", ".json", ".yml", ".yaml"))
         },
         project_name=project_name,
+        dag_requirements_texts={dag_id: {f"{dag_id}.pdf": text} for dag_id, text in pdf_instructions.items()},
     )
 
     index_results = agentic_output.index_results

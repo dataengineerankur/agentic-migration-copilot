@@ -55,6 +55,31 @@ class RequirementsAgent:
         )
 
 
+class PdfRequirementsAgent:
+    def __init__(self, llm: LLMClient) -> None:
+        self.llm = llm
+
+    def run(self, *, dag_id: str, requirement_texts: Dict[str, str]) -> RequirementsResult:
+        combined = "\n\n".join(
+            [f"[{key}]\n{value}" for key, value in requirement_texts.items()]
+        )
+        prompt = render_prompt(
+            "requirements_pdf",
+            dag_id=dag_id,
+            requirements_input=combined if combined.strip() else "NO_PDF_TEXT",
+            no_inference_rules=_no_inference_rules(self.llm.settings.no_inference),
+        )
+        response = self.llm.chat(
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+        )
+        data = _extract_with_retry(self.llm, prompt, response.content)
+        return RequirementsResult(
+            summary=str(data.get("summary", "")),
+            assumptions=list(data.get("assumptions", [])),
+        )
+
+
 class MappingAgent:
     def __init__(self, llm: LLMClient) -> None:
         self.llm = llm

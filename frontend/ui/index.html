@@ -21,6 +21,7 @@
               rows="3"
               placeholder="Source paths to index (one per line)"
             ></textarea>
+            <input id="pdfs-input" type="text" placeholder="PDFs folder path (optional)" />
             <input id="output-input" type="text" placeholder="Output folder path" />
             <input id="project-input" type="text" placeholder="Project name" />
           </div>
@@ -111,7 +112,7 @@
             <span>Strict no-inference mode</span>
           </label>
         </div>
-        <div class="drawer-section">
+        <div class="drawer-section" data-agent="cursor">
           <h4>Cursor Agent</h4>
           <input id="cursor-key" type="password" placeholder="Cursor API key" />
           <input id="cursor-repo" type="text" placeholder="Repository URL" />
@@ -120,7 +121,7 @@
             <button id="cursor-test" class="ghost">Test connection</button>
           </div>
         </div>
-        <div class="drawer-section">
+        <div class="drawer-section" data-agent="inhouse">
           <h4>In-house</h4>
           <input id="inhouse-url" type="text" placeholder="Agent endpoint URL" />
           <input id="inhouse-token" type="password" placeholder="Auth token" />
@@ -130,7 +131,7 @@
             <button id="inhouse-test" class="ghost">Test connection</button>
           </div>
         </div>
-        <div class="drawer-section">
+        <div class="drawer-section" data-agent="groq">
           <h4>Groq</h4>
           <input id="groq-key" type="password" placeholder="Groq API key" />
           <input id="groq-model" type="text" placeholder="Model name (openai/gpt-oss-120b)" />
@@ -138,7 +139,7 @@
             <button id="groq-test" class="ghost">Test connection</button>
           </div>
         </div>
-        <div class="drawer-section">
+        <div class="drawer-section" data-agent="openrouter">
           <h4>OpenRouter</h4>
           <input id="openrouter-key" type="password" placeholder="OpenRouter API key" />
           <input id="openrouter-model" type="text" placeholder="Model name" />

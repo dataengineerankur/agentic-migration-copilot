@@ -10,3 +10,4 @@ migration_output_demo/
 artifacts/
 reports/
 *.log
+pdfs/*.pdf

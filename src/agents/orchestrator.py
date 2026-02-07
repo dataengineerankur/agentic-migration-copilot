@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from ..llm.client import LLMClient
 from ..llm.settings import LLMSettings
 from ..services.activity import ActivityLogger
-from .agents import CodegenAgent, MappingAgent, RequirementsAgent
+from .agents import CodegenAgent, MappingAgent, PdfRequirementsAgent, RequirementsAgent
 from .indexing_agent import IndexingAgent, IndexingResult
 from .mock import MockAgentRunner
 from .validation_agent import ValidationResult
@@ -36,6 +36,7 @@ class AgentOrchestrator:
         dag_sources: Dict[str, str],
         requirements_texts: Dict[str, str],
         project_name: str,
+        dag_requirements_texts: Optional[Dict[str, Dict[str, str]]] = None,
     ) -> AgenticOutput:
         try:
             if self.settings.agent_mode.lower() == "mock":
@@ -43,6 +44,7 @@ class AgentOrchestrator:
                     dag_sources=dag_sources,
                     requirements_texts=requirements_texts,
                     project_name=project_name,
+                    dag_requirements_texts=dag_requirements_texts,
                 )
 
             llm = LLMClient(self.settings)
@@ -58,15 +60,40 @@ class AgentOrchestrator:
             mapping_agent = MappingAgent(llm)
             mapping_results: List[Dict[str, Any]] = []
             for index_result in index_results:
+                per_dag_requirements = None
+                if dag_requirements_texts:
+                    per_dag_requirements = dag_requirements_texts.get(index_result.dag_id)
+                if per_dag_requirements:
+                    self.activity.log(
+                        "Analyze",
+                        f"Summarizing PDF instructions for {index_result.dag_id}.",
+                        dag_id=index_result.dag_id,
+                    )
+                    dag_requirements = PdfRequirementsAgent(llm).run(
+                        dag_id=index_result.dag_id,
+                        requirement_texts=per_dag_requirements,
+                    )
+                    requirements_summary = (
+                        f"{requirements.summary}\n\nPDF requirements:\n{dag_requirements.summary}".strip()
+                    )
+                    assumptions = requirements.assumptions[:]
+                    assumptions.extend(dag_requirements.assumptions)
+                else:
+                    requirements_summary = requirements.summary
+                    assumptions = requirements.assumptions[:]
                 self.activity.log("Analyze", f"Analyzing DAG {index_result.dag_id}.", dag_id=index_result.dag_id)
                 self.activity.log("Plan", f"Planning migration for {index_result.dag_id}.", dag_id=index_result.dag_id)
                 mapping = mapping_agent.run(
                     dag_id=index_result.dag_id,
                     index_payload=index_result.raw,
-                    requirements_summary=requirements.summary,
+                    requirements_summary=requirements_summary,
                 )
                 mapping_results.append(
-                    {"dag_id": mapping.dag_id, "mappings": mapping.mappings, "assumptions": mapping.assumptions}
+                    {
+                        "dag_id": mapping.dag_id,
+                        "mappings": mapping.mappings,
+                        "assumptions": assumptions + mapping.assumptions,
+                    }
                 )
 
             self.activity.log("Generate", "Generating notebooks, utils, and databricks.yml.")
@@ -78,7 +105,7 @@ class AgentOrchestrator:
                 requirements_summary=requirements.summary,
             )
 
-            assumptions = requirements.assumptions[:]
+            assumptions = []
             for mapping in mapping_results:
                 assumptions.extend(mapping.get("assumptions", []))
             assumptions.extend(codegen.assumptions)

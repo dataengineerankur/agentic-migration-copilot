@@ -3,6 +3,7 @@ const dagSearch = document.getElementById("dag-search");
 const statusFilter = document.getElementById("status-filter");
 const sourcePaths = document.getElementById("source-paths");
 const sourceInput = document.getElementById("source-input");
+const pdfsInput = document.getElementById("pdfs-input");
 const outputInput = document.getElementById("output-input");
 const projectInput = document.getElementById("project-input");
 const timeline = document.getElementById("timeline");
@@ -43,6 +44,7 @@ let activity = [];
 let selectedDag = null;
 let selectedDags = new Set();
 let sessionError = null;
+let allowedAgents = [];
 
 const stageMap = {
   "Not Started": "not-started",
@@ -57,6 +59,7 @@ async function loadSession() {
     const response = await fetch("/api/session");
     if (response.ok) {
       const data = await response.json();
+      allowedAgents = Array.isArray(data.allowed_agents) ? data.allowed_agents : [];
       sessionError = null;
       return data;
     }
@@ -66,6 +69,7 @@ async function loadSession() {
   try {
     const response = await fetch("./session.json");
     const data = await response.json();
+    allowedAgents = Array.isArray(data.allowed_agents) ? data.allowed_agents : [];
     sessionError = null;
     return data;
   } catch (err) {
@@ -277,6 +281,36 @@ async function loadSettings() {
   }
 }
 
+function applyAllowedAgents() {
+  const restricted = Array.isArray(allowedAgents) && allowedAgents.length > 0;
+  const allowedSet = new Set(allowedAgents);
+  Array.from(agentMode.options).forEach((option) => {
+    if (!restricted) {
+      option.hidden = false;
+      option.disabled = false;
+      return;
+    }
+    const keep = allowedSet.has(option.value);
+    option.hidden = !keep;
+    option.disabled = !keep;
+  });
+  document.querySelectorAll(".drawer-section[data-agent]").forEach((section) => {
+    if (!restricted) {
+      section.classList.remove("hidden");
+      return;
+    }
+    const agent = section.getAttribute("data-agent");
+    if (agent && allowedSet.has(agent)) {
+      section.classList.remove("hidden");
+    } else {
+      section.classList.add("hidden");
+    }
+  });
+  if (restricted && agentMode.value && !allowedSet.has(agentMode.value)) {
+    agentMode.value = allowedAgents[0];
+  }
+}
+
 async function saveSettings() {
   const payload = {
     agent_mode: agentMode.value,
@@ -292,6 +326,7 @@ async function saveSettings() {
     openrouter_api_key: openrouterKey.value,
     openrouter_model: openrouterModel.value,
     source_inputs: parseSourceInputs(),
+    pdfs_path: pdfsInput.value || undefined,
     output_root: outputInput.value || undefined,
     project_name: projectInput.value || undefined,
     selected_dags: Array.from(selectedDags),
@@ -322,6 +357,7 @@ async function migrate() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       inputs: parseSourceInputs(),
+      pdfs_path: pdfsInput.value || undefined,
       output_root: outputInput.value,
       project_name: projectInput.value || "airflow-migration",
       notebook_format: "py",
@@ -356,6 +392,7 @@ async function poll() {
   sourcePaths.textContent = (session.source_inputs || []).join(", ") || "—";
   renderTimeline(session?.timeline || []);
   renderDagList();
+  applyAllowedAgents();
   const dags = session?.dags || [];
   if (!selectedDag && dags.length > 0) {
     selectDag(dags[0]);
@@ -386,6 +423,7 @@ async function init() {
   openrouterKey.value = settings.openrouter_api_key || "";
   openrouterModel.value = settings.openrouter_model || "";
   sourceInput.value = (settings.source_inputs || []).join("\n");
+  pdfsInput.value = settings.pdfs_path || "";
   outputInput.value = settings.output_root || "";
   projectInput.value = settings.project_name || "";
   selectedDags = new Set(settings.selected_dags || []);
@@ -396,6 +434,7 @@ async function init() {
     selectDag(dags[0]);
   }
   updateMigrateButton();
+  applyAllowedAgents();
   setupHandlers();
   setInterval(poll, 4000);
 }
