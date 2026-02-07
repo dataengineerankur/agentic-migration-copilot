@@ -49,8 +49,11 @@ def _make_handler(allowed_agents: Optional[List[str]]):
                 output_root = settings.get("output_root", "")
                 session_path = os.path.join(output_root, "reports", "session.json")
                 session_payload = _load_json(session_path)
-                if not session_payload:
+                if not isinstance(session_payload, dict) or not session_payload:
                     session_payload = _build_scan_session(settings, allowed_agents=allowed_agents)
+                else:
+                    if session_payload.get("source_inputs") != settings.get("source_inputs"):
+                        session_payload = _build_scan_session(settings, allowed_agents=allowed_agents)
                 if isinstance(session_payload, dict):
                     session_payload["source_inputs"] = settings.get("source_inputs", [])
                     session_payload["allowed_agents"] = allowed_agents or []
