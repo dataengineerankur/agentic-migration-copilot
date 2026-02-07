@@ -611,6 +611,47 @@ def format_migration_plan_llm(
     return "\n".join(lines)
 
 
+def format_migration_steps_report(
+    dag_id: str,
+    mappings: List[Dict[str, Any]],
+    requirements_summary: Optional[str],
+    support_files: Optional[List[Dict[str, str]]],
+) -> str:
+    lines = [
+        "# Migration Steps",
+        "",
+        f"DAG: {dag_id}",
+        "",
+        "## Requirements Summary",
+        requirements_summary or "None provided",
+        "",
+        "## Steps",
+    ]
+    if not mappings:
+        lines.append("- No mapped tasks.")
+    else:
+        for mapping in mappings:
+            task_id = mapping.get("task_id")
+            stage = mapping.get("stage")
+            pattern = mapping.get("pattern")
+            notebook = mapping.get("notebook_name")
+            lines.append(
+                f"- {stage}: task `{task_id}` -> `{pattern}` in `{notebook}`"
+            )
+    if support_files:
+        lines.extend(
+            [
+                "",
+                "## Source Context Files",
+            ]
+        )
+        for item in support_files:
+            path = item.get("path")
+            lines.append(f"- {path}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def render_report_html(project_name: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -855,6 +896,14 @@ def write_reports_per_dag(
         )
         write_text(os.path.join(dag_root, "migration_plan.md"), plan_text)
 
+        steps_text = format_migration_steps_report(
+            dag_id,
+            mapping.get("mappings", []),
+            mapping.get("requirements_summary"),
+            (index_result.raw or {}).get("support_files"),
+        )
+        write_text(os.path.join(dag_root, "migration_steps.md"), steps_text)
+
         dag_assumptions = assumptions[:]
         dag_assumptions.extend(mapping.get("assumptions", []))
         write_text(os.path.join(dag_root, "assumptions.md"), format_assumptions(dag_assumptions))
@@ -868,6 +917,7 @@ def write_reports_per_dag(
                 os.path.join(dag_root, "code_index.json"),
                 os.path.join(dag_root, "task_mapping.json"),
                 os.path.join(dag_root, "migration_plan.md"),
+                os.path.join(dag_root, "migration_steps.md"),
                 os.path.join(dag_root, "assumptions.md"),
                 os.path.join(dag_root, "validation_report.md"),
             ]

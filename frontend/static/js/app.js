@@ -232,6 +232,7 @@ function renderArtifacts() {
     `notebooks/${selectedDag.dag_id}/`,
     "utils/",
     `reports/${selectedDag.dag_id}/migration_plan.md`,
+    `reports/${selectedDag.dag_id}/migration_steps.md`,
     `reports/${selectedDag.dag_id}/task_mapping.json`,
     `reports/${selectedDag.dag_id}/assumptions.md`,
     `reports/${selectedDag.dag_id}/validation_report.md`,

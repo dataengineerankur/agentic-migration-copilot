@@ -163,6 +163,17 @@ PDF matching supports:
 - Exact `dag_id` match
 - Script filename (e.g., `process_Adweek.py` → `process_Adweek.pdf`)
 - Fuzzy matching for templated IDs (e.g., `acds_adweek_oracle_load_{env}` → `acds_adweek_oracle_load_dev.pdf`)
+- Optional alias mapping via `pdfs/aliases.json`:
+```
+{
+  "acds_adweek_oracle_load_{env}": [
+    "ACDX Adweek Pipeline Documentation"
+  ],
+  "acds_adweek_oracle_load_prd": [
+    "ACDX Adweek Pipeline Documentation"
+  ]
+}
+```
 
 Requirements:
 ```

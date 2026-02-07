@@ -1,5 +1,6 @@
 Return ONLY the Databricks notebook (.py) content as plain text.
-Notebook must start with "# Databricks notebook source".
+Notebook must start with "# Databricks notebook source" and include "# COMMAND ----------" separators
+between logical sections (at least one COMMAND separator).
 Keep it minimal and strictly match the DAG task intent.
 Do NOT add extra steps (DQ, watermarking, schema normalization, logging frameworks).
 Only include Spark/JDBC/Snowflake logic if the DAG task explicitly performs I/O.

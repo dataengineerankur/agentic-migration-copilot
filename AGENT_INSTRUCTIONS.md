@@ -12,7 +12,7 @@ This document defines agent responsibilities, methodology, and required artifact
 
 ---
 
-## Inputs (must support both)
+## Inputs (must support all)
 ### A) Confluence
 - Page URL(s) with pipeline descriptions, dependencies, SLA, and data contracts.
 - Agent must extract: sources, sinks, schedules, failure handling, data volumes, SLAs.
@@ -24,22 +24,33 @@ This document defines agent responsibilities, methodology, and required artifact
   - Runbooks (md/txt)
   - Data contracts/schema files
 
+### C) PDF Specs
+- One or more PDF documents containing:
+  - pipeline overview, architecture, constraints, SLAs, business logic
+  - data flow diagrams, data contracts, runbooks
+
 ---
 
 ## Outputs (must produce)
 1) **Databricks Workflows** definition:
    - Jobs JSON (or DAB bundle) with tasks and dependencies.
 2) **Databricks notebooks** in **`.py` format** (not `.ipynb`):
-   - One notebook per major task (ingest, transform, quality, publish).
+   - Grouped by logical stages (ingest, transform, quality, publish).
+   - Only create notebooks when there is actual executable logic.
 3) **Migration plan** (human‑readable):
    - mapping of Airflow tasks → Databricks tasks.
-4) **Evidence pack**:
+   - notebook grouping rationale and task clustering.
+4) **Migration report** (step‑by‑step):
+   - derived from PDF specs + source code analysis.
+   - explicit steps, dependencies, and required changes.
+5) **Evidence pack**:
    - extracted requirements, assumptions, mappings, and validation notes.
 
 ---
 
 ## Agent Methodology (must follow)
-### 1) Discovery & Indexing
+### 1) Discovery & Indexing (order matters)
+- **PDF first**: extract goals, constraints, SLAs, data flow, and business rules.
 - Index all provided repo paths (respect `.gitignore`).
 - Parse Airflow DAGs and extract:
   - `DAG` definitions, `schedule_interval`, `default_args`, `tasks`, `dependencies`.
@@ -78,8 +89,14 @@ Define mapping rules in **migration_rules.json**:
 - required secrets
 - data movement, formats, and checkpoints
 
-### 4) Notebook Generation (source `.py`)
-Each Databricks task must have a dedicated notebook:
+### 4) Notebook Planning & Generation (source `.py`)
+**Notebook planning must be intelligent**:
+- Cluster Airflow tasks into **logical stages** based on data flow and cohesion.
+- Prefer **fewer notebooks** with clear stage boundaries instead of one‑per‑task.
+- Create a notebook only if it contains executable logic; avoid empty placeholders.
+- Document the grouping rationale in the migration plan.
+
+Suggested notebook naming:
 - `00_ingest_*.py` (ingestion from source)
 - `10_transform_*.py`
 - `20_quality_*.py` (basic data checks)
@@ -90,10 +107,19 @@ Notebook structure:
 # Databricks notebook source
 import ...
 
+# COMMAND ----------
+# parameters / widgets
+
+# COMMAND ----------
+# read
+
 def main():
   # read
   # transform
   # write
+
+# COMMAND ----------
+# entrypoint
 
 if __name__ == "__main__":
   main()
@@ -109,6 +135,7 @@ Create Databricks workflow JSON:
 ### 6) Validation & Evidence
 Generate:
 - `migration_plan.md`
+- `migration_report.md`
 - `task_mapping.json`
 - `assumptions.md`
 - `validation_report.md`
