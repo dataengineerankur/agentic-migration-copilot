@@ -159,6 +159,11 @@ pdfs/
 When a matching PDF exists, its contents are used **as the only external instructions** for that DAG.
 If present, the planner uses **PDF ONLY** requirements for that DAG.
 
+PDF matching supports:
+- Exact `dag_id` match
+- Script filename (e.g., `process_Adweek.py` → `process_Adweek.pdf`)
+- Fuzzy matching for templated IDs (e.g., `acds_adweek_oracle_load_{env}` → `acds_adweek_oracle_load_dev.pdf`)
+
 Requirements:
 ```
 pip install PyPDF2

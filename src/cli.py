@@ -106,8 +106,17 @@ def build_migration_artifacts(
 
     from .services.pdf_reader import load_pdf_instructions
 
+    dag_aliases = {}
+    for path, content in dag_sources.items():
+        parsed = parse_airflow_file(path, content)
+        dag_id = parsed.dag_id or ""
+        if not dag_id:
+            continue
+        alias = os.path.splitext(os.path.basename(path))[0]
+        dag_aliases.setdefault(dag_id, []).append(alias)
+
     pdf_instructions, pdf_notes = load_pdf_instructions(
-        pdfs_dir, [dag.dag_id or "" for dag in dags]
+        pdfs_dir, [dag.dag_id or "" for dag in dags], aliases=dag_aliases
     )
     ingest_result.notes.extend(pdf_notes)
 
@@ -139,6 +148,16 @@ def build_migration_artifacts(
     _assert_agent_configured(settings)
 
     activity_logger.log("Scan", "Scanning Airflow DAGs.")
+    support_files = []
+    for path, content in text_blobs.items():
+        if path in dag_sources:
+            continue
+        if len(content) > 4000:
+            snippet = content[:4000]
+        else:
+            snippet = content
+        support_files.append({"path": path, "snippet": snippet})
+
     orchestrator = AgentOrchestrator(settings=settings, activity=activity_logger)
     agentic_output = orchestrator.run(
         dag_sources=dag_sources,
@@ -149,6 +168,7 @@ def build_migration_artifacts(
         },
         project_name=project_name,
         dag_requirements_texts={dag_id: {f"{dag_id}.pdf": text} for dag_id, text in pdf_instructions.items()},
+        support_files=support_files,
     )
 
     index_results = agentic_output.index_results

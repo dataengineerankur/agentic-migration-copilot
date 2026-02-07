@@ -17,6 +17,7 @@ class MockAgentRunner:
         requirements_texts: Dict[str, str],
         project_name: str,
         dag_requirements_texts: Optional[Dict[str, Dict[str, str]]] = None,
+        support_files: Optional[List[Dict[str, str]]] = None,
     ) -> "AgenticOutput":
         from .orchestrator import AgenticOutput
 

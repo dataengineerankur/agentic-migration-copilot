@@ -42,7 +42,6 @@ const openrouterModel = document.getElementById("openrouter-model");
 const groqTest = document.getElementById("groq-test");
 const openrouterTest = document.getElementById("openrouter-test");
 const noInference = document.getElementById("no-inference");
-const pdfRequired = document.getElementById("pdf-required");
 
 let session = null;
 let activity = [];
@@ -343,7 +342,6 @@ async function saveSettings() {
     project_name: projectInput.value || undefined,
     selected_dags: Array.from(selectedDags),
     no_inference: noInference.checked,
-    pdf_required: pdfRequired.checked,
   };
   await fetch("/api/settings", {
     method: "POST",
@@ -500,7 +498,6 @@ async function init() {
   projectInput.value = settings.project_name || "";
   selectedDags = new Set(settings.selected_dags || []);
   noInference.checked = Boolean(settings.no_inference);
-  pdfRequired.checked = Boolean(settings.pdf_required);
   renderDagList();
   const dags = session?.dags || [];
   if (dags.length > 0) {

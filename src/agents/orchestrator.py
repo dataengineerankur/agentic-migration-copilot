@@ -37,6 +37,7 @@ class AgentOrchestrator:
         requirements_texts: Dict[str, str],
         project_name: str,
         dag_requirements_texts: Optional[Dict[str, Dict[str, str]]] = None,
+        support_files: Optional[List[Dict[str, str]]] = None,
     ) -> AgenticOutput:
         try:
             if self.settings.agent_mode.lower() == "mock":
@@ -55,7 +56,10 @@ class AgentOrchestrator:
             index_results: List[IndexingResult] = []
             for path, content in dag_sources.items():
                 self.activity.log("Index", f"Indexing DAG {path}.")
-                index_results.append(index_agent.run(file_path=path, content=content))
+                index_result = index_agent.run(file_path=path, content=content)
+                if support_files:
+                    index_result.raw["support_files"] = support_files
+                index_results.append(index_result)
 
             mapping_agent = MappingAgent(llm)
             mapping_results: List[Dict[str, Any]] = []
@@ -63,10 +67,6 @@ class AgentOrchestrator:
                 per_dag_requirements = None
                 if dag_requirements_texts:
                     per_dag_requirements = dag_requirements_texts.get(index_result.dag_id)
-                if self.settings.pdf_required and not per_dag_requirements:
-                    raise ValueError(
-                        f"PDF required but missing for {index_result.dag_id}."
-                    )
                 if per_dag_requirements:
                     combined_pdf = "\n\n".join(per_dag_requirements.values()).strip()
                     if not combined_pdf:

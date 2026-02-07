@@ -209,7 +209,6 @@ def _default_settings() -> Dict[str, Any]:
         "groq_api_key": os.getenv("GROQ_API_KEY"),
         "groq_model": os.getenv("GROQ_MODEL"),
         "no_inference": False,
-        "pdf_required": False,
         "pdfs_path": os.path.join(repo_root, "pdfs"),
     }
 
@@ -305,7 +304,6 @@ def _apply_env(settings: Dict[str, Any], mode_override: Optional[str] = None) ->
     _set_env("AMC_OPENROUTER_MODEL", settings.get("openrouter_model"))
 
     _set_env("AMC_NO_INFERENCE", settings.get("no_inference"))
-    _set_env("AMC_PDF_REQUIRED", settings.get("pdf_required"))
 
 
 def _merge_settings(current: Dict[str, Any], payload: Dict[str, Any]) -> Dict[str, Any]:
