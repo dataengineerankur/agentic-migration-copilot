@@ -52,9 +52,9 @@ def _make_handler(allowed_agents: Optional[List[str]]):
                 if not session_payload:
                     session_payload = _build_scan_session(settings, allowed_agents=allowed_agents)
                 if isinstance(session_payload, dict):
-                    session_payload.setdefault("source_inputs", settings.get("source_inputs", []))
+                    session_payload["source_inputs"] = settings.get("source_inputs", [])
                     session_payload["allowed_agents"] = allowed_agents or []
-                    session_payload.setdefault("pdfs_path", settings.get("pdfs_path", ""))
+                    session_payload["pdfs_path"] = settings.get("pdfs_path", "")
                 self._send_json(session_payload)
                 return
             if self.path.startswith("/api/activity"):
