@@ -410,6 +410,9 @@ async function init() {
   renderTimeline(session?.timeline || []);
   sourcePaths.textContent = (session.source_inputs || []).join(", ") || "—";
   const settings = await loadSettings();
+  if ((!allowedAgents || allowedAgents.length === 0) && Array.isArray(settings.allowed_agents)) {
+    allowedAgents = settings.allowed_agents;
+  }
   agentMode.value = settings.agent_mode || "inhouse";
   cursorKey.value = settings.cursor_api_key || "";
   cursorRepo.value = settings.cursor_repository || "";
